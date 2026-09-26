@@ -1,16 +1,517 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Banking App</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>SecureBank Dashboard</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f7fb;
+            color: #1f2937;
+        }
+
+        /* Account card */
+        .account-card {
+            background-color: #102a43;
+            color: white;
+            border-radius: 18px;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .account-label {
+            font-size: 15px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .account-info h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .account-number {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        .account-status {
+            font-size: 14px;
+            padding: 8px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            height: 8px;
+            width: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+            background: #4ade80; /* Green for active */
+        }
+
+        .navbar {
+            background-color: #102a43;
+            color: white;
+            padding: 10px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .welcome-small {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .logout {
+            color: white;
+            padding: 8px 15px;
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .logout:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .container {
+            width: 85%;
+            max-width: 1100px;
+            margin: 40px auto;
+        }
+
+        .welcome {
+            margin-bottom: 25px;
+        }
+
+        .welcome h1 {
+            font-size: 30px;
+            color: #102a43;
+            margin-bottom: 7px;
+        }
+
+        .welcome p {
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .quick-actions {
+            margin-bottom: 30px;
+            margin-top: 30px;
+        }
+
+        .quick-actions h2 {
+            font-size: 22px;
+            color: #102a43;
+            margin-bottom: 18px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background-color: white;
+            color: #102a43;
+            text-decoration: none;
+            border-radius: 14px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            transition: 0.2s, ease;
+            min-height: 130px;
+        }
+
+        .action-card:hover {
+            box-shadow: 0 8px 20px rgba(16, 42, 67, 0.10);
+            transform: translateY(-3px);
+            border-color: #b8c7d9;
+        }
+
+        .action-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .action-card p {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .transactions-section {
+            margin-top: 35px;
+            margin-bottom: 40px;
+        }
+
+        .section-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .section-heading h2 {
+            font-size: 22px;
+            color: #102a43;
+        }
+
+        .view-all {
+            font-size: 14px;
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .view-all:hover {
+            text-decoration: underline;
+        }
+
+        .transactions-list {
+            background-color: white;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .transaction-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .transaction-row:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-info {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .transaction-info strong {
+            font-size: 16px;
+            color: #102a43;
+        }
+
+        .transaction-info span {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            color: #102a43;
+        }
+
+        .transaction-status {
+            background: #e8f7ee;
+            color: #1e7e45;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .transaction-status .status.completed {
+            background: #e8f7ee;
+            color: #1e7e45;
+        }
+
+        .transaction-status .status.pending {
+            background: #fff4e5;
+            color: #b45309;
+        }
+
+        .empty-transactions {
+            text-align: center;
+            padding: 40px 25px;
+            background: white;
+            border-radius: 14px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .empty-transactions h3 {
+            color: #102a43;
+            margin-bottom: 8px;
+        }
+
+        .empty-transactions p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .account-toggle {
+            background: transparent;
+            color: #64748b;
+            border: none;
+            padding: 0%;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .action-toggle:hover {
+            color: #102a43;
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) 
+        {
+            .navbar {
+                padding: 16px 5%;
+            }
+            .nav-right {
+                gap: 10px;
+            }
+            .welcome-small {
+                display: none;
+            }
+            .container {
+                width: 90%;
+                margin: 30px auto;
+            }
+            .account-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+            }
+
+            .account-info h2 {
+                font-size: 30px;
+            }
+
+            .action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .transaction-row {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .transaction-amount {
+                font-size: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .logout {
+                padding: 7px 11px;
+                font-size: 13px;
+            }
+
+            .welcome h1 {
+                font-size: 25px;
+            }
+
+            .account-card {
+                padding: 24px;
+            }
+
+            .account-info h2 {
+                font-size: 28px;
+            }
+        }
+
+        .flash {
+            padding: 14px 18px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .flash.success {
+            background: #e8f7ee;
+            color: #1e7e45;
+            border: 1px solid #a8dfbd;
+        }
+
+        .flash.danger {
+            background: #fdecec;
+            color: #b42318;
+            border: 1px solid #f3b3b0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to Secure Banking</h1>
-    <p>Your Secure Banking Simulation.</p>
+    <!-- Navigation Bar -->
+     <nav class="navbar">
+        <div class="logo">
+            SecureBank
+        </div>
 
-    <button>Login</button>
-    <button>Create Account</button>
+        <div class="nav-right">
+            <span class="welcome-small">
+                Welcome, {{ user.name }}!
+            </span>
+            <a
+              href="{{ url_for('logout') }}" 
+              class="logout">Logout
+            </a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <!-- Welcome Section -->
+        <section class="welcome">
+            <h1>Welcome back, {{ user['name'] }}!</h1>
+            <p>Here is your SecureBank account overview.</p>
+        </section>
+        <!-- Flash Message -->
+         {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                 {% for category, message in messages %}
+                     <div class="flash {{ category }}">
+                        {{ message }}
+                     </div>
+                 {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <!-- Account Balance Cards -->
+        <section class="account-card">
+            <div class="account-info">
+
+                <p class="account-label">
+                    Account Balance
+                </p>
+                <h2>
+                    ${{ "%.2f" | format(account['balance']) }}
+                </h2>
+                <p class="account-number" id="accountNumber" data-account-number="{{ account['account_number'] }}">
+                    Account Number: 
+                    **** **** {{ account['account_number'] [-4:] }}
+                </p>
+                <button type="button" class="account-toggle" onclick="toggleAccountNumber()">
+                    View account number
+                </button>
+            </div>
+            <div class="account-status">
+
+                <span class="status-dot"></span>
+                Active Account
+            </div>
+        </section>
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+            <h2>Quick Actions</h2>
+            <div class="action-grid">
+                <a href="{{ url_for('transfer') }}" class="action-card">
+                    <h3>Transfer Funds</h3>
+                    <p>Transfer money to other accounts.</p>
+                </a>
+                <a href="{{ url_for('deposit') }}" class="action-card">
+                    <h3>Deposit Funds</h3>
+                    <p>Add money into your account.</p>
+                </a>
+                <a href="#" class="action-card">
+                    <h3>View Account Details</h3>
+                    <p>Check your account information.</p>
+                </a>
+                <a href="#" class="action-card">
+                    <h3>Withdraw Funds</h3>
+                    <p>Withdraw money from your account.</p>
+                </a>
+                <a href="#" class="action-card">
+                    <h3>View Statements</h3>
+                    <p>View your account statements.</p>
+                </a>
+                <a href="#" class="action-card">
+                    <h3>Pay Bills</h3>
+                    <p>Pay your bills directly from your account.</p>
+                </a>
+                <a href="#" class="action-card">
+                    <h3>Settings</h3>
+                    <p>Manage your account settings.</p>
+                </a>
+            </div>
+        </section>
+        <!-- Recent Transactions -->
+        <section class="transactions-section">
+            <div class="section-heading">
+                <h2>Recent Transactions</h2>
+                <a href="#" class="view-all">View All</a>
+            </div>
+            {% if transactions %}
+                <div class="transactions-list">
+                    {% for transaction in transactions %}
+                        <div class="transaction-row">
+                            <div class="transaction-info">
+                                <strong>{{ transaction['description'] or 'Transaction' }}</strong>
+                                <span>
+                                    {{ transaction['created_at'] }}
+                                </span>
+                            </div>
+                            <div class="transaction-amount">
+                                ${{ "%.2f" | format(transaction['amount']) }}
+                            </div>
+                            <div class="transaction-status">
+                                {% if transaction['status'] == 'completed' %}
+                                    <span class="status completed">Completed</span>
+                                {% else %}
+                                    <span class="status pending">Pending</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-transactions">
+                    <h3>No Recent Transactions</h3>
+                    <p>Your recent transactions will appear here.</p>
+                </div>
+            {% endif %}
+        </section>
+    </main>
+    <script>
+        function toggleAccountNumber() {
+            const accountNumber = document.getElementById('accountNumber');
+            const fullNumber = accountNumber.dataset.accountNumber;
+
+            if (accountNumber.textContent.includes('*')) {
+                accountNumber.textContent = 'Account Number: ' + fullNumber;
+            } else {
+                accountNumber.textContent = 'Account Number: **** **** ' + fullNumber.slice(-4);
+            }
+        }
+    </script>
 </body>
 </html>

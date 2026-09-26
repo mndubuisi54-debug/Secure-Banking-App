@@ -40,10 +40,20 @@ def initialise_database():
         )
     ''')
 
+    columns = connection.execute(
+        "PRAGMA table_info(transactions)").fetchall()
+
+    column_names = [column[1] for column in columns]
+
+    if 'description' not in column_names:
+        connection.execute('''
+            ALTER TABLE transactions
+            ADD COLUMN description TEXT
+        ''')
+
     connection.commit()
     connection.close()
 
-    print(" SecureBank Database initialized successfully.")
-
+    print(" SecureBank Database initialized successfully.") 
 if __name__ == "__main__":
     initialise_database()
