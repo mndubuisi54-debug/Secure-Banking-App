@@ -39,12 +39,12 @@ def dashboard():
     
     connection.close()
     
-    return render_template(
+    return render_template (
         'index.html',
         user=user,
         account=account,
         transactions=transactions
-        )
+    )
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -106,6 +106,31 @@ def logout():
     flash('You have been logged out.', 'danger')
     return redirect(url_for('login'))
 
+@app.route('/verify-account', methods=['GET', 'POST'])
+def verify_account():
+    account_number = request.args.get('account_number')
+
+    connection = get_db_connection()
+    account = connection.execute(
+        'SELECT * FROM accounts WHERE account_number = ?',
+        (account_number,)
+    ).fetchone()
+
+    if not account:
+        connection.close()
+        return{"found": False}
+
+    user = connection.execute(
+        'SELECT * FROM accounts WHERE user_id = ?',
+        (account['user_id'],)
+    ).fetchone()
+
+    connection.close()
+
+    return{
+        'found: True,'
+        'name': user['name']
+    }
 @app.route('/transfer', methods=['GET', 'POST'])
 def transfer():
     if 'user_id' not in session:
@@ -119,15 +144,19 @@ def transfer():
     ).fetchone()
 
     if request.method == 'POST':
-        reciever_account_number = request.form['account_number']
+        receiver_account_number = request.form['account_number']
         amount = float(request.form['amount'])
         description = request.form.get('description', '')
-        reciever_account = connection.execute(
+        receiver_account = connection.execute(
             'SELECT * FROM accounts WHERE account_number = ?',
-            (reciever_account_number,)
+            (receiver_account_number,)
+        ).fetchone()
+        receiver_user = connection.execute(
+            'SELECT name FROM users WHERE id = ?',
+            (receiver_account['user_id'],)
         ).fetchone()
 
-        if not reciever_account:
+        if not receiver_account:
 
             flash(
                 'Recipent account not found.',
@@ -135,7 +164,11 @@ def transfer():
             )
             connection.close()
             return redirect(url_for('transfer'))
-        if reciever_account['account_number'] == sender_account['account_number']:
+        receiver_user = connection.execute(
+                    'SELECT name FROM users WHERE id = ?',
+                    (receiver_account['user_id'],)
+        ).fetchone
+        if receiver_account['account_number'] == sender_account['account_number']:
             flash(
                 'You cannot transfer to self!!.',
                 'danger'
@@ -157,22 +190,22 @@ def transfer():
             connection.close()
             return redirect(url_for('transfer'))
         connection.execute(
-            'UPDATE accounts SET balance = balance + ? WHERE id = ?',
+            'UPDATE accounts SET balance = balance - ? WHERE id = ?',
             (amount, sender_account['id'])
         )
         connection.execute(
-            'UPDATE accounts SET balance = balance - ? WHERE id = ?',
-            (amount, reciever_account['id'])
+            'UPDATE accounts SET balance = balance + ? WHERE id = ?',
+            (amount, receiver_account['id'])
         )
         connection.execute(
             '''
             INSERT INTO transactions
-            (sender_account, reciever_account, amount, transaction_type, status, description)
+            (sender_account, receiver_account, amount, transaction_type, status, description)
             VALUES (?, ?, ?, ?, ?, ?, ?)
             ''',
             (
                 sender_account['account_number'],
-                reciever_account['account_number'],
+                receiver_account['account_number'],
                 amount,
                 'transfer',
                 'completed',
@@ -187,7 +220,10 @@ def transfer():
         )
         return redirect(url_for('transfer'))
     connection.close()
-    return render_template('transfer.html')
+    return render_template(
+        'transfer.html',
+        receiver_user=receiver_user if request.method == 'POST' and 'receiver_user' in locals() else None
+        )
 
 @app.route('/deposit', methods=['GET', 'POST'])
 def deposit():
@@ -198,7 +234,7 @@ def deposit():
     account = connection.execute(
         'SELECT * FROM accounts WHERE user_id = ?',
         (session['user_id'],)
-    ).fetchone
+    ).fetchone()
     if request.method == 'POST':
         amount = float(request.form['amount'])
         if amount <= 0:

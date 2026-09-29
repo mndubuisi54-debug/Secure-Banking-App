@@ -99,3 +99,17 @@ a:hover {
     color: #721c24;
     border: 1px solid #f3b3b0;
 }
+.back-arrow {
+    display: block;
+    width: fit-content;
+    background: transparent;
+    font-size: 25px;
+    color: #102a43;
+    text-decoration: none;
+    padding: 0;
+    margin: 10px;
+    line-height: 1;
+}
+.back-arrow:hover {
+    background-color: transparent;
+}

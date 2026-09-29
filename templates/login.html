@@ -29,5 +29,12 @@
             <button type="submit">Login</button>
         </form>
     </div>
+    <script>
+      setTimeout(function() {
+        document.querySelectorAll('.flash').forEach(function(message) {
+          message.remove();
+        });
+      }, 4000);
+    </script>
 </body>
 </html>

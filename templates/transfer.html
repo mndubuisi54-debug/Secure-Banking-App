@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width-device-width, initial-scale=1.0">
 
+    <div class="container">
+      <a href="{{ url_for('dashboard') }}" class="back-arrow" aria-label="Back to Dashboard">&larr;</a>
+    </div>
+
     <title>Transer Funds | SecureBank</title>
 
     <link rel="stylesheet"
@@ -11,6 +15,15 @@
 </head>
 <body>
     <div class="container">
+       {% with messages = get_flashed_messages(with_categories=true) %}
+           {% if messages %}
+              {% for category, message in messages %}
+                 <div class="flash {{ category}}">
+                      {{ message }}
+                 </div>
+              {% endfor %}
+            {% endif %}
+        {% endwith %}
         <h1>Transfer Funds</h1>
         <p>Send money securely.</p>
         <form method="POST"
@@ -25,6 +38,7 @@
                 placeholder="Enter account number"
                 required
               >
+              <p id="recipient-name"></p>
               <label for="amount">
                 Amount
               </label>
@@ -52,5 +66,29 @@
             </button>
         </form>
     </div>
+
+    <script>
+      setTimeout(function() {
+        document.querySelectorAll('.flash').forEach(function(message) {
+          message.remove();
+        });
+      }, 4000);
+      document.getElementById('account_number').addEventListener('blur', function() {
+        const accountNumber = this.value;
+        if (!accountNumber) {
+          return;
+        }
+        fetch(`/verify-account?account_number=${accountNumber}`)
+        .then(respone => respone.json())
+        .then(data => {
+          const recipientName = document.getElementById('recipient-name');
+          if (data.found) {
+            recipientName.textContent = `Recipient: ${data.name}`;
+          } else {
+            recipientName.textContent = 'Recipient account not found.';
+          }
+        });
+      });
+    </script>
 </body>
 </html>

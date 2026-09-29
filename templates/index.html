@@ -512,6 +512,11 @@
                 accountNumber.textContent = 'Account Number: **** **** ' + fullNumber.slice(-4);
             }
         }
+        setTimeout(function() {
+            document.querySelectorAll('.flash').forEach(function(message) {
+            message.remove();
+            });
+        }, 4000);
     </script>
 </body>
 </html>
