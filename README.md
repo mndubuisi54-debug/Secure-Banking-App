@@ -250,7 +250,7 @@ It is a simulated banking application and is not connected to real financial ins
 
 Computer Science Student | Software Development
 
-GitHub:(https://github.com/mndubuisi54-debug)
+GitHub: https://github.com/mndubuisi54-debug
 
 ---
 
